@@ -139,3 +139,7 @@ vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 
 sessions/
+
+*.sqlite
+*.sqlite3
+*.db
