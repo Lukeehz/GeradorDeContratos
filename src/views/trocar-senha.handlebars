@@ -1,0 +1,35 @@
+<div class="auth-header">
+    <h1 class="auth-title">Troque sua senha</h1>
+    <p class="auth-subtitle">Este é seu primeiro acesso. Defina uma nova senha para continuar.</p>
+</div>
+
+<form action="/trocar-senha" method="POST" class="auth-form">
+    <div class="form-group">
+        <label for="password">Nova Senha</label>
+        <input
+            type="password"
+            id="password"
+            name="password"
+            placeholder="••••••••"
+            required
+        >
+    </div>
+
+    <div class="form-group">
+        <label for="confirmPassword">Confirmar Nova Senha</label>
+        <input
+            type="password"
+            id="confirmPassword"
+            name="confirmPassword"
+            placeholder="••••••••"
+            required
+        >
+    </div>
+
+    <button type="submit" class="btn-primary">
+        <span>Salvar e continuar</span>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+        </svg>
+    </button>
+</form>

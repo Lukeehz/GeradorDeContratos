@@ -5,58 +5,54 @@ const flash = require('express-flash')
 const fileStore = require('session-file-store')(sessions)
 const path = require('path')
 const app = express()
-
-const auth = require ("./src/router/login")
+const userLocals = require('./src/middlewares/userLocals')
+const auth = require('./src/router/login')
+const appRouter = require('./src/router/app')
 const conn = require('./src/db/conn')
+require('./src/models/index')
 
 const hbs = exphbs.create({
-    defaultLayout: "main",
+    defaultLayout: 'main',
     helpers: {
         eq: (a, b) => a === b,
     },
-});
+})
 
-app.engine("handlebars", hbs.engine);
-app.set("view engine", "handlebars");
-app.set("views", path.join(__dirname, "src", "views"));
-app.use(express.static("public"));
-
-app.use(
-    express.urlencoded({
-        extended: true,
+app.engine('handlebars', hbs.engine)
+app.set('view engine', 'handlebars')
+app.set('views', path.join(__dirname, 'src', 'views'))
+app.use(express.static(path.join(__dirname, 'public')))
+app.use(express.urlencoded({ extended: true }))
+app.use(express.json())
+app.use(sessions({
+    name: 'session',
+    secret: 'nosso_secret',
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+        maxAge: 1000 * 60 * 60 * 24 * 7
+    },
+    store: new fileStore({
+        logFn: function () {},
+        path: path.join(__dirname, 'sessions'),
+        ttl: 604800
     })
-);
-
-app.use(express.json());
-
-app.use(
-    sessions({
-        name: "session",
-        secret: "nosso_secret",
-        resave: false,
-        saveUninitialized: false,
-        store: new fileStore({
-            logFn: function () { },
-            path: require("path").join(require("os").tmpdir(), "sessions"),
-        }),
-    })
-);
-
-app.use(flash());
-
-//app.use(SessionMiddleware)
-
-app.use("/", auth)
-
-app.get("/", (req, res, next) => {
-    res.render("index")
+}))
+app.use(flash())
+app.use(userLocals)
+app.use('/', auth)
+app.use('/', appRouter)
+app.get('/', (req, res) => {
+    if (req.session.userId) return res.redirect('/home')
+    res.render('login', { layout: 'auth', title: 'Login', messages: req.flash() })
 })
 
 conn
     .sync({ force: true })
     .then(() => {
-        app.listen(3000);
+        app.listen(3000)
+        console.log('Servidor rodando na porta 3000')
     })
     .catch((err) => {
-        console.log(err);
+        console.log(err)
     })

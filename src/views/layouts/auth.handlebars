@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{title}}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/auth.css">
+</head>
+<body>
+
+    <div class="auth-wrapper">
+        <div class="auth-brand">
+            <div class="brand-logo">GC</div>
+            <p class="brand-tagline">Gerador de Contratos</p>
+        </div>
+
+        <div class="auth-card">
+            {{#if messages.error_msg}}
+                {{#each messages.error_msg}}
+                    <div class="flash flash--error">
+                        <span class="flash__icon">✕</span>
+                        <span>{{this}}</span>
+                    </div>
+                {{/each}}
+            {{/if}}
+
+            {{#if messages.success_msg}}
+                {{#each messages.success_msg}}
+                    <div class="flash flash--success">
+                        <span class="flash__icon">✓</span>
+                        <span>{{this}}</span>
+                    </div>
+                {{/each}}
+            {{/if}}
+
+            {{{body}}}
+        </div>
+    </div>
+
+</body>
+</html>

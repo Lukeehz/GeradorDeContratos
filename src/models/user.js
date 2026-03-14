@@ -1,5 +1,6 @@
 const { DataTypes } = require('sequelize')
 const sequelize = require('../db/conn')
+const f = require('session-file-store')
 
 const User = sequelize.define('User', {
     name: {
@@ -30,6 +31,10 @@ const User = sequelize.define('User', {
         type: DataTypes.BOOLEAN,
         allowNull: false,
         defaultValue: true
+    },
+    role:{
+        type: DataTypes.ENUM('moderator', 'user'),
+        allowNull: false,
     },
     resetCode:{
         type: DataTypes.STRING,

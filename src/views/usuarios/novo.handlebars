@@ -1,0 +1,68 @@
+<div class="form-page">
+    <div class="form-card">
+        <div class="form-header">
+            <h2 class="form-title">Novo Usuário</h2>
+            <p class="form-subtitle">Preencha os dados para cadastrar um novo usuário.</p>
+        </div>
+
+        <form action="/usuarios/novo" method="POST" class="contract-form">
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="name">Nome</label>
+                    <input type="text" id="name" name="name" placeholder="Primeiro nome" required />
+                </div>
+                <div class="form-group">
+                    <label for="midName">Nome do meio</label>
+                    <input type="text" id="midName" name="midName" placeholder="Nome do meio" required />
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="surName">Sobrenome</label>
+                <input type="text" id="surName" name="surName" placeholder="Sobrenome" required />
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" placeholder="email@exemplo.com" required />
+            </div>
+
+            <div class="form-group">
+                <label for="cpf">CPF</label>
+                <input type="text" id="cpf" name="cpf" placeholder="000.000.000-00" />
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="password">Senha</label>
+                    <input type="password" id="password" name="password" placeholder="••••••••" required />
+                </div>
+                <div class="form-group">
+                    <label for="confirmPassword">Confirmar Senha</label>
+                    <input type="password" id="confirmPassword" name="confirmPassword" placeholder="••••••••" required />
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="role">Tipo de conta</label>
+                <select id="role" name="role" required>
+                    <option value="user">Usuário</option>
+                    <option value="moderator">Admin</option>
+                </select>
+            </div>
+
+            <div class="form-actions">
+                <a href="/usuarios" class="btn-back">Cancelar</a>
+                <button type="submit" class="btn-primary">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                        <circle cx="12" cy="7" r="4"/>
+                    </svg>
+                    Cadastrar
+                </button>
+            </div>
+
+        </form>
+    </div>
+</div>

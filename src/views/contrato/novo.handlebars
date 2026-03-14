@@ -1,0 +1,151 @@
+<div class="form-page">
+    <div class="form-card">
+        <div class="form-header">
+            <h2 class="form-title">Novo Contrato</h2>
+            <p class="form-subtitle">Selecione o tipo, edite as cláusulas e adicione novas se necessário.</p>
+        </div>
+
+        <form action="/contratos/novo" method="POST" class="contract-form" id="contratoForm">
+
+            <div class="form-group">
+                <label for="tipo">Tipo de Contrato</label>
+                <select id="tipo" name="tipo" required>
+                    <option value="" disabled selected>Selecione o tipo...</option>
+                    <option value="CONTRATO DE PRESTAÇÃO DE SERVIÇOS">Prestação de Serviço</option>
+                    <option value="CONTRATO DE EMPRÉSTIMO">Contrato de Empréstimo</option>
+                    <option value="CONTRATO DE TRABALHO AUTÔNOMO">Trabalho Autônomo</option>
+                    <option value="CONTRATO DE LOCAÇÃO">Contrato de Locação</option>
+                    <option value="CONTRATO DE COMPRA E VENDA">Contrato de Compra e Venda</option>
+                    <option value="RECIBO DE PAGAMENTO">Recibo de Pagamento</option>
+                    <option value="outro">Outro (personalizado)</option>
+                </select>
+            </div>
+
+            <div class="form-group" id="grupo-custom" style="display:none">
+                <label for="tituloCustom">Título do Contrato</label>
+                <input type="text" id="tituloCustom" name="tituloCustom" placeholder="Ex: Contrato de Parceria Comercial" />
+            </div>
+
+            <div id="clausulas-container" style="display:none">
+                <div class="clausulas-header">
+                    <span class="clausulas-label">CLÁUSULAS</span>
+                </div>
+                <div id="clausulas-list"></div>
+                <button type="button" class="btn-add-clausula" id="btnAdicionarClausula">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                    </svg>
+                    Adicionar Cláusula
+                </button>
+            </div>
+
+            <div class="form-actions">
+                <a href="/home" class="btn-back">Cancelar</a>
+                <button type="submit" class="btn-primary">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14,2 14,8 20,8"/>
+                    </svg>
+                    Gerar PDF
+                </button>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+<script>
+const modelos = {
+    "CONTRATO DE PRESTAÇÃO DE SERVIÇOS": [
+        { titulo: "CLÁUSULA 1ª — DO OBJETO", texto: "O presente contrato tem como objeto a prestação dos seguintes serviços: ______________________________, que serão executados pelo(a) CONTRATADO(A) conforme acordado entre as partes." },
+        { titulo: "CLÁUSULA 2ª — DO PRAZO", texto: "Os serviços terão início em ____________ e deverão ser concluídos até ____________, salvo acordo diferente firmado entre as partes." },
+        { titulo: "CLÁUSULA 3ª — DO VALOR", texto: "Pelos serviços prestados, o(a) CONTRATANTE pagará ao(à) CONTRATADO(A) o valor total de R$ ____________." },
+        { titulo: "CLÁUSULA 4ª — DAS OBRIGAÇÕES", texto: "O(A) CONTRATADO(A) se compromete a executar os serviços com qualidade e dentro do prazo estipulado. O(A) CONTRATANTE se compromete a fornecer as informações necessárias e efetuar o pagamento conforme acordado." },
+        { titulo: "CLÁUSULA 5ª — DO FORO", texto: "Fica eleito o foro da comarca de ______________________________ para dirimir quaisquer dúvidas ou litígios decorrentes do presente contrato." }
+    ],
+    "CONTRATO DE EMPRÉSTIMO": [
+        { titulo: "CLÁUSULA 1ª — DO OBJETO", texto: "O(A) CONTRATANTE empresta ao(à) CONTRATADO(A) a quantia de R$ ____________, doravante denominada VALOR EMPRESTADO." },
+        { titulo: "CLÁUSULA 2ª — DO PRAZO", texto: "O valor deverá ser devolvido até ____________, conforme acordado entre as partes." },
+        { titulo: "CLÁUSULA 3ª — DOS JUROS", texto: "Sobre o valor emprestado incidirão juros de ______% ao mês. Em caso de atraso, incidirá multa de ______% sobre o valor devido." },
+        { titulo: "CLÁUSULA 4ª — DO FORO", texto: "Fica eleito o foro da comarca de ______________________________ para dirimir quaisquer dúvidas ou litígios decorrentes do presente contrato." }
+    ],
+    "CONTRATO DE TRABALHO AUTÔNOMO": [
+        { titulo: "CLÁUSULA 1ª — DO OBJETO", texto: "O(A) CONTRATADO(A) prestará ao(à) CONTRATANTE os seguintes serviços autônomos: ______________________________, sem vínculo empregatício." },
+        { titulo: "CLÁUSULA 2ª — DO VALOR", texto: "Pelos serviços prestados, o(a) CONTRATANTE pagará ao(à) CONTRATADO(A) o valor de R$ ____________, a ser pago em ____________." },
+        { titulo: "CLÁUSULA 3ª — DA AUTONOMIA", texto: "O(A) CONTRATADO(A) executará os serviços com total autonomia, sem subordinação hierárquica, podendo organizar seu próprio horário e método de trabalho." },
+        { titulo: "CLÁUSULA 4ª — DO FORO", texto: "Fica eleito o foro da comarca de ______________________________ para dirimir quaisquer dúvidas ou litígios decorrentes do presente contrato." }
+    ],
+    "CONTRATO DE LOCAÇÃO": [
+        { titulo: "CLÁUSULA 1ª — DO OBJETO", texto: "O(A) CONTRATANTE cede ao(à) CONTRATADO(A), a título de locação, o imóvel situado à ______________________________, pelo período estipulado neste contrato." },
+        { titulo: "CLÁUSULA 2ª — DO PRAZO", texto: "O prazo de locação será de ____________, com início em ____________ e término em ____________." },
+        { titulo: "CLÁUSULA 3ª — DO VALOR", texto: "O valor do aluguel mensal é de R$ ____________, a ser pago até o dia ______ de cada mês." },
+        { titulo: "CLÁUSULA 4ª — DAS OBRIGAÇÕES", texto: "O(A) CONTRATADO(A) se compromete a conservar o imóvel em bom estado, não realizar modificações sem autorização e devolvê-lo nas mesmas condições em que o recebeu." },
+        { titulo: "CLÁUSULA 5ª — DO FORO", texto: "Fica eleito o foro da comarca de ______________________________ para dirimir quaisquer dúvidas ou litígios decorrentes do presente contrato." }
+    ],
+    "CONTRATO DE COMPRA E VENDA": [
+        { titulo: "CLÁUSULA 1ª — DO OBJETO", texto: "O(A) CONTRATANTE vende ao(à) CONTRATADO(A) o seguinte bem: ______________________________, nas condições descritas neste contrato." },
+        { titulo: "CLÁUSULA 2ª — DO VALOR", texto: "O valor total da venda é de R$ ____________, a ser pago da seguinte forma: ______________________________." },
+        { titulo: "CLÁUSULA 3ª — DA ENTREGA", texto: "O bem será entregue em ______________________________, na data de ____________, após a confirmação do pagamento." },
+        { titulo: "CLÁUSULA 4ª — DAS GARANTIAS", texto: "O(A) CONTRATANTE declara que o bem está livre de ônus, dívidas ou restrições de qualquer natureza." },
+        { titulo: "CLÁUSULA 5ª — DO FORO", texto: "Fica eleito o foro da comarca de ______________________________ para dirimir quaisquer dúvidas ou litígios decorrentes do presente contrato." }
+    ],
+    "RECIBO DE PAGAMENTO": [
+        { titulo: "RECIBO Nº ______", texto: "Recebi(emos) de _______________________________, portador(a) do CPF _____________________, a importância de R$ ____________ ( ______________________________ ), referente a: ______________________________." },
+        { titulo: "FORMA DE PAGAMENTO", texto: "Pagamento realizado mediante: ( ) Dinheiro  ( ) Transferência  ( ) PIX  ( ) Cheque  ( ) Outro: ______________________________." },
+        { titulo: "DECLARAÇÃO", texto: "Para clareza e como prova de haver recebido a quantia acima, firmo o presente recibo, dando plena e geral quitação." }
+    ]
+}
+
+const select = document.getElementById('tipo')
+const grupoCustom = document.getElementById('grupo-custom')
+const inputCustom = document.getElementById('tituloCustom')
+const clausulasContainer = document.getElementById('clausulas-container')
+const clausulasList = document.getElementById('clausulas-list')
+let contador = 0
+
+function criarClausula(titulo = '', texto = '', removivel = true) {
+    contador++
+    const div = document.createElement('div')
+    div.className = 'clausula-item'
+    div.dataset.id = contador
+    div.innerHTML = `
+        <div class="clausula-header">
+            <input type="text" name="clausulaTitulo[]" value="${titulo}" placeholder="Ex: CLÁUSULA ${contador}ª — DO OBJETO" class="clausula-titulo" required />
+            ${removivel ? `<button type="button" class="btn-remove" onclick="removerClausula(${contador})">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </button>` : ''}
+        </div>
+        <textarea name="clausulaTexto[]" rows="4" placeholder="Texto da cláusula..." class="clausula-texto" required>${texto}</textarea>
+    `
+    clausulasList.appendChild(div)
+}
+
+function removerClausula(id) {
+    const el = document.querySelector(`.clausula-item[data-id="${id}"]`)
+    if (el) el.remove()
+}
+
+select.addEventListener('change', () => {
+    clausulasList.innerHTML = ''
+    contador = 0
+
+    if (select.value === 'outro') {
+        grupoCustom.style.display = 'flex'
+        inputCustom.required = true
+        clausulasContainer.style.display = 'block'
+        criarClausula('', '', true)
+    } else {
+        grupoCustom.style.display = 'none'
+        inputCustom.required = false
+        clausulasContainer.style.display = 'block'
+        const clausulas = modelos[select.value] || []
+        clausulas.forEach(c => criarClausula(c.titulo, c.texto, true))
+    }
+})
+
+document.getElementById('btnAdicionarClausula').addEventListener('click', () => {
+    criarClausula('', '', true)
+})
+</script>
