@@ -49,7 +49,7 @@ app.get('/', (req, res) => {
 })
 
 conn
-    .sync({ force: true })
+    .sync({ force: false })
     .then(() => {
         app.listen(3000)
         console.log('Servidor rodando na porta 3000')
