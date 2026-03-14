@@ -48,12 +48,3 @@ Abre em `http://localhost:3000`.
 
 - **Usuário** — gera, lista e baixa contratos
 - **Admin** — tudo acima, mais gerenciamento de usuários
-
-## .gitignore recomendado
-
-```
-node_modules/
-sessions/
-public/contratos/
-.env
-```
