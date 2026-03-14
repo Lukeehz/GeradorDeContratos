@@ -51,8 +51,8 @@ app.get('/', (req, res) => {
 conn
     .sync({ force: false })
     .then(() => {
-        app.listen(3000)
-        console.log('Servidor rodando na porta 3000')
+        app.listen(process.env.port)
+        console.log(`Servidor rodando na porta ${process.env.port}`)
     })
     .catch((err) => {
         console.log(err)
