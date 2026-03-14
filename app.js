@@ -1,3 +1,4 @@
+require('dotenv').config()
 const express = require('express')
 const exphbs = require('express-handlebars')
 const sessions = require('express-session')
@@ -25,8 +26,8 @@ app.use(express.static(path.join(__dirname, 'public')))
 app.use(express.urlencoded({ extended: true }))
 app.use(express.json())
 app.use(sessions({
-    name: 'session',
-    secret: 'nosso_secret',
+    name: process.env.name_session,
+    secret: process.env.secret_session,
     resave: false,
     saveUninitialized: false,
     cookie: {
