@@ -1,59 +1,132 @@
 # Gerador de Contratos
 
-Um sistema web para criar e gerenciar contratos em PDF. A ideia é simples: você preenche as cláusulas, o sistema monta o documento com seus dados e gera o PDF pronto para assinar.
+Sistema web para criação e gerenciamento de contratos em PDF.
+O usuário preenche os dados e cláusulas necessárias, e o sistema monta automaticamente o documento e gera um PDF pronto para download ou impressão.
 
-## O que dá pra fazer
+---
 
-- Gerar contratos em PDF (Prestação de Serviço, Locação, Empréstimo, Compra e Venda, Recibo e outros)
-- Editar as cláusulas padrão ou adicionar novas
-- Baixar e reimprimir contratos anteriores
-- Filtrar contratos por data
-- Cadastrar usuários com dois níveis de acesso: usuário comum e admin
-- Troca de senha obrigatória no primeiro login
+## Funcionalidades
 
-## Stack
+* Geração automática de contratos em PDF
+* Suporte para diferentes tipos de contrato:
 
-Node.js, Express, Sequelize, SQLite, Handlebars, PDFKit
+  * Prestação de Serviço
+  * Locação
+  * Empréstimo
+  * Compra e Venda
+  * Recibo
+* Edição de cláusulas padrão
+* Adição de novas cláusulas personalizadas
+* Listagem de contratos gerados
+* Download e reimpressão de contratos
+* Filtro de contratos por data
+* Sistema de usuários com dois níveis de acesso
+* Troca de senha obrigatória no primeiro login
 
-## Como rodar
+---
+
+## Tecnologias Utilizadas
+
+* Node.js
+* Express
+* Sequelize
+* SQLite
+* Handlebars
+* PDFKit
+
+---
+
+## Instalação
+
+Clone o repositório:
 
 ```bash
 git clone https://github.com/seu-usuario/gerador-de-contratos.git
+```
+
+Entre na pasta do projeto:
+
+```bash
 cd gerador-de-contratos
+```
+
+Instale as dependências:
+
+```bash
 npm install
+```
+
+Crie a pasta de sessões:
+
+```bash
 mkdir sessions
+```
+
+Inicie a aplicação:
+
+```bash
 node app.js
 ```
 
-Abre em `http://localhost:3000`.
+A aplicação ficará disponível em:
 
-## Estrutura de pastas
+```
+http://localhost:3000
+```
+
+---
+
+## Estrutura do Projeto
 
 ```
 ├── public/
 │   ├── css/
-│   └── contratos/       ← PDFs gerados ficam aqui
-├── sessions/            ← sessões persistentes
+│   └── contratos/        # PDFs gerados
+│
+├── sessions/             # Sessões persistentes
+│
 ├── src/
-│   ├── controllers/
-│   ├── db/
-│   ├── middlewares/
-│   ├── models/
-│   ├── router/
-│   └── views/
-└── app.js
+│   ├── controllers/      # Lógica das rotas
+│   ├── db/               # Configuração do banco
+│   ├── middlewares/      # Middlewares da aplicação
+│   ├── models/           # Models do Sequelize
+│   ├── router/           # Rotas da aplicação
+│   └── views/            # Templates Handlebars
+│
+└── app.js                # Arquivo principal da aplicação
 ```
 
-## Níveis de acesso
+---
 
-- **Usuário** — gera, lista e baixa contratos
-- **Admin** — tudo acima, mais gerenciamento de usuários
+## Níveis de Acesso
 
-## .gitignore recomendado
+### Usuário
 
-```
-node_modules/
-sessions/
-public/contratos/
-.env
-```
+* Criar contratos
+* Visualizar contratos gerados
+* Baixar contratos em PDF
+
+### Administrador
+
+* Todas as permissões de usuário
+* Gerenciamento de usuários do sistema
+
+---
+
+## Observações
+
+* O banco de dados SQLite é criado automaticamente na primeira execução.
+* Os arquivos PDF gerados são armazenados em `public/contratos/`.
+* A pasta `sessions/` é utilizada para persistência de sessões do sistema.
+
+---
+
+## Status do Projeto
+
+Versão atual: **1.0**
+
+---
+
+## Licença
+
+Este projeto está licenciado sob a licença **MIT**.
