@@ -6,7 +6,7 @@ const flash = require('express-flash')
 const SQLiteStore = require('connect-sqlite3')(sessions)
 const path = require('path')
 const app = express()
-const userLocals = require('./src/middlewares/userLocals')
+//const userLocals = require('./src/middlewares/userLocals')
 const auth = require('./src/router/login')
 const appRouter = require('./src/router/app')
 const conn = require('./src/db/conn')
@@ -41,7 +41,7 @@ app.use(sessions({
 
 }))
 app.use(flash())
-app.use(userLocals)
+//app.use(userLocals)
 app.use('/', auth)
 app.use('/', appRouter)
 app.get('/', (req, res) => {
@@ -50,7 +50,7 @@ app.get('/', (req, res) => {
 })
 
 conn
-    .sync({ force: false })
+    .sync({ force: true })
     .then(() => {
         app.listen(process.env.port)
         console.log(`Servidor rodando na porta ${process.env.port}`)

@@ -21,6 +21,7 @@ module.exports = class authController {
 
     // GET DE LOGIN
     static loginGet(req, res) {
+        if (req.session.userId) return res.redirect('/home')
         res.render('login', { layout: 'auth', title: 'Login', messages: req.flash() })
     }
 
@@ -33,14 +34,14 @@ module.exports = class authController {
     static logout(req, res) {
         req.session.destroy(err => {
             if (err) console.log(err)
-            return res.redirect('/')
+            return res.redirect('/login')
         })
     }
 
     // GET DE USUÁRIOS
     static async listar(req, res) {
         const locals = await getLocals(req)
-        if (!locals) return res.redirect('/')
+        if (!locals) return res.redirect('/login')
 
         try {
             const usuarios = await User.findAll({
@@ -74,7 +75,7 @@ module.exports = class authController {
     // GET DE NOVO USUÁRIO
     static async novoUsuarioGet(req, res) {
         const locals = await getLocals(req)
-        if (!locals) return res.redirect('/')
+        if (!locals) return res.redirect('/login')
 
         res.render('usuarios/novo', {
             layout: 'main',
@@ -95,32 +96,36 @@ module.exports = class authController {
 
             if (!user) {
                 req.flash('error_msg', 'Usuário não cadastrado!')
-                return res.redirect('/')
+                return res.redirect('/login')
             }
 
             const passwordMatch = await bcrypt.compare(password, user.password)
             if (!passwordMatch) {
                 req.flash('error_msg', 'Senha incorreta')
-                return res.redirect('/')
+                return res.redirect('/login')
             }
 
             req.session.userId = user.id
             req.flash('success_msg', 'Login realizado com sucesso')
             req.session.save(err => {
-                if (err) return res.json({ error: 'Erro interno' })
+                if (err) return res.redirect('/login')
                 if (user.firstAcess) return res.redirect('/trocar-senha')
                 return res.redirect('/home')
             })
         } catch (err) {
             console.log(err)
             req.flash('error_msg', 'Erro interno')
-            return res.redirect('/')
+            return res.redirect('/login')
         }
     }
 
     // POST DE REGISTER
     static async register(req, res) {
         const { name, midName, surName, email, password, confirmPassword, cpf: cpfUser } = req.body
+
+        if (!name || !midName || !surName || !email || !password || !confirmPassword) {
+            return res.json({ error: 'Preencha todos os campos' })
+        }
 
         if (password !== confirmPassword) {
             req.flash('error_msg', 'As senhas não são iguais')
@@ -157,7 +162,6 @@ module.exports = class authController {
             })
 
             req.session.userId = user.id
-            req.flash('success_msg', 'Cadastro realizado com sucesso')
             req.session.save(err => {
                 if (err) return res.json({ error: 'Erro interno' })
                 return res.json({ success: 'Cadastro realizado com sucesso' })

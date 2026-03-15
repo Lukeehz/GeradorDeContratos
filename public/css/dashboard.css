@@ -705,3 +705,71 @@ body {
     grid-template-columns: 1fr 1fr;
     gap: 16px;
 }
+
+/* ── Upload ── */
+.upload-area {
+    background: var(--bg);
+    border: 1px dashed var(--border);
+    border-radius: 10px;
+    padding: 40px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: border-color var(--t), background var(--t);
+    text-align: center;
+}
+
+.upload-area:hover,
+.upload-area--drag {
+    border-color: var(--accent);
+    background: var(--accent-dim);
+}
+
+.upload-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    pointer-events: none;
+}
+
+/* ── Badges de status ── */
+.badge-assinado {
+    font-size: 11px;
+    font-weight: 600;
+    color: #86efac;
+    background: rgba(34,197,94,0.1);
+    border: 1px solid rgba(34,197,94,0.25);
+    padding: 2px 8px;
+    border-radius: 20px;
+}
+
+.badge-pendente {
+    font-size: 11px;
+    font-weight: 600;
+    color: #fde68a;
+    background: rgba(234,179,8,0.1);
+    border: 1px solid rgba(234,179,8,0.25);
+    padding: 2px 8px;
+    border-radius: 20px;
+}
+
+/* ── Botão assinar ── */
+.btn-assinar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #86efac;
+    background: transparent;
+    border: 1px solid rgba(34,197,94,0.3);
+    padding: 8px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background var(--t);
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.btn-assinar:hover { background: rgba(34,197,94,0.1); }

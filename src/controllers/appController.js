@@ -1,12 +1,16 @@
-const { Contrato, User } = require('../models/index')
+const { Contrato, Documento, User } = require('../models/index')
 const { cpf } = require('cpf-cnpj-validator')
 const PDFDocument = require('pdfkit')
+const { PDFDocument: PDFLib, rgb, StandardFonts } = require('pdf-lib')
 const { Op } = require('sequelize')
 const path = require('path')
 const fs = require('fs')
 
 const pastaContratos = path.join(__dirname, '../../public/contratos')
+const pastaDocumentos = path.join(__dirname, '../../public/documentos')
+
 if (!fs.existsSync(pastaContratos)) fs.mkdirSync(pastaContratos, { recursive: true })
+if (!fs.existsSync(pastaDocumentos)) fs.mkdirSync(pastaDocumentos, { recursive: true })
 
 async function getLocals(req) {
     const user = await User.findByPk(req.session.userId)
@@ -21,6 +25,9 @@ async function getLocals(req) {
 
 module.exports = class appController {
 
+    // ─── GET ─────────────────────────────────────────────────────────────────
+
+    // GET DE HOME
     static async home(req, res) {
         const locals = await getLocals(req)
         if (!locals) {
@@ -50,6 +57,7 @@ module.exports = class appController {
         })
     }
 
+    // GET DE NOVO CONTRATO
     static async novoContratoGet(req, res) {
         const locals = await getLocals(req)
         if (!locals) return res.redirect('/')
@@ -63,6 +71,7 @@ module.exports = class appController {
         })
     }
 
+    // GET DE LISTAR CONTRATOS
     static async listarContratos(req, res) {
         const locals = await getLocals(req)
         if (!locals) return res.redirect('/')
@@ -104,6 +113,7 @@ module.exports = class appController {
         }
     }
 
+    // GET DE DOWNLOAD CONTRATO
     static async downloadContrato(req, res) {
         try {
             const contrato = await Contrato.findOne({
@@ -130,6 +140,87 @@ module.exports = class appController {
         }
     }
 
+    // GET DE LISTAR DOCUMENTOS
+    static async listarDocumentos(req, res) {
+        const locals = await getLocals(req)
+        if (!locals) return res.redirect('/')
+
+        try {
+            const documentos = await Documento.findAll({
+                where: { userID: req.session.userId },
+                order: [['createdAt', 'DESC']]
+            })
+
+            const lista = documentos.map(d => ({
+                id: d.id,
+                nomeOriginal: d.nomeOriginal,
+                assinado: d.assinado,
+                arquivo: d.assinado ? d.arquivoAssinado : d.arquivoOriginal,
+                data: d.createdAt.toLocaleDateString('pt-BR')
+            }))
+
+            res.render('documento/lista', {
+                layout: 'main',
+                title: 'Documentos',
+                pageSubtitle: 'Importe e assine documentos',
+                isDocumentos: true,
+                documentos: lista,
+                ...locals,
+                messages: req.flash()
+            })
+        } catch (err) {
+            console.log(err)
+            req.flash('error_msg', 'Erro ao carregar documentos')
+            return res.redirect('/home')
+        }
+    }
+
+    // GET DE IMPORTAR DOCUMENTO
+    static async importarGet(req, res) {
+        const locals = await getLocals(req)
+        if (!locals) return res.redirect('/')
+
+        res.render('documento/importar', {
+            layout: 'main',
+            title: 'Importar Documento',
+            pageSubtitle: 'Faça upload de um PDF para assinar',
+            isDocumentos: true,
+            ...locals,
+            messages: req.flash()
+        })
+    }
+
+    // GET DE DOWNLOAD DOCUMENTO
+    static async downloadDocumento(req, res) {
+        try {
+            const doc = await Documento.findOne({
+                where: { id: req.params.id, userID: req.session.userId }
+            })
+
+            if (!doc) {
+                req.flash('error_msg', 'Documento não encontrado')
+                return res.redirect('/documentos')
+            }
+
+            const arquivo = doc.assinado ? doc.arquivoAssinado : doc.arquivoOriginal
+            const filePath = path.join(pastaDocumentos, arquivo)
+
+            if (!fs.existsSync(filePath)) {
+                req.flash('error_msg', 'Arquivo não encontrado')
+                return res.redirect('/documentos')
+            }
+
+            res.download(filePath, arquivo)
+        } catch (err) {
+            console.log(err)
+            req.flash('error_msg', 'Erro ao baixar documento')
+            return res.redirect('/documentos')
+        }
+    }
+
+    // ─── POST ────────────────────────────────────────────────────────────────
+
+    // POST DE NOVO CONTRATO
     static async novoContrato(req, res) {
         const { tipo, tituloCustom, clausulaTitulo, clausulaTexto } = req.body
 
@@ -207,12 +298,13 @@ module.exports = class appController {
             doc.text(`Assinado em ${hoje}.`, { align: 'right' })
             doc.moveDown(3)
 
-            doc.font('Helvetica').text('_________________________________', { align: 'left' })
-            doc.font('Helvetica-Bold').text(nomeContratante, { continued: true })
-            doc.font('Helvetica').text(' — CONTRATANTE')
-            doc.moveDown(2)
-            doc.text('_________________________________', { align: 'left' })
-            doc.text('________________________________ — CONTRATADO(A)')
+            // Assinaturas manuais
+            doc.moveDown(1)
+            doc.font('Helvetica-Bold').text(nomeContratante + '  ', { continued: true })
+            doc.font('Helvetica').text('_________________________________')
+            doc.moveDown(1.5)
+            doc.font('Helvetica-Bold').text('CONTRATADO(A)  ', { continued: true })
+            doc.font('Helvetica').text('_________________________________')
 
             doc.end()
 
@@ -230,6 +322,143 @@ module.exports = class appController {
             console.log(err)
             req.flash('error_msg', 'Erro interno')
             return res.redirect('/contratos/novo')
+        }
+    }
+
+    // POST DE IMPORTAR DOCUMENTO
+    static async importarPost(req, res) {
+        if (!req.file) {
+            req.flash('error_msg', 'Selecione um arquivo PDF')
+            return res.redirect('/documentos/importar')
+        }
+
+        try {
+            await Documento.create({
+                userID: req.session.userId,
+                nomeOriginal: req.file.originalname,
+                arquivoOriginal: req.file.filename,
+                assinado: false
+            })
+
+            req.flash('success_msg', 'Documento importado com sucesso')
+            return res.redirect('/documentos')
+        } catch (err) {
+            console.log(err)
+            req.flash('error_msg', 'Erro ao importar documento')
+            return res.redirect('/documentos/importar')
+        }
+    }
+
+    // POST DE ASSINAR DOCUMENTO
+    static async assinar(req, res) {
+        try {
+            const user = await User.findByPk(req.session.userId)
+            if (!user) return res.redirect('/login')
+
+            const doc = await Documento.findOne({
+                where: { id: req.params.id, userID: req.session.userId }
+            })
+
+            if (!doc) {
+                req.flash('error_msg', 'Documento não encontrado')
+                return res.redirect('/documentos')
+            }
+
+            const arquivoBase = doc.assinado ? doc.arquivoAssinado : doc.arquivoOriginal
+            const filePath = path.join(pastaDocumentos, arquivoBase)
+            const pdfBytes = fs.readFileSync(filePath)
+
+            const pdfDoc = await PDFLib.load(pdfBytes)
+            const font = await pdfDoc.embedFont(StandardFonts.Helvetica)
+            const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold)
+
+            const nomeCompleto = `${user.name} ${user.midName} ${user.surName}`
+            const cpfFormatado = cpf.format(user.cpf)
+            const hoje = new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })
+
+            const count = parseInt(doc.totalAssinaturas) || 0
+            const alturaBloco = 80
+
+            let pagina
+            let startY
+
+            if (count === 0) {
+                // Primeira assinatura — sempre cria nova página
+                pagina = pdfDoc.addPage([595, 842])
+                const { width } = pagina.getSize()
+
+                pagina.drawText('Assinaturas Digitais', {
+                    x: 60, y: 780, size: 13, font: fontBold,
+                    color: rgb(0.2, 0.2, 0.2)
+                })
+                pagina.drawLine({
+                    start: { x: 60, y: 768 },
+                    end: { x: width - 60, y: 768 },
+                    thickness: 0.5,
+                    color: rgb(0.7, 0.7, 0.7)
+                })
+
+                startY = 740
+            } else {
+                // Assinaturas seguintes — usa a última página (já é a de assinaturas)
+                const pages = pdfDoc.getPages()
+                pagina = pages[pages.length - 1]
+                startY = 740 - (count * alturaBloco)
+
+                // Se não couber mais, cria nova página
+                if (startY < 60) {
+                    pagina = pdfDoc.addPage([595, 842])
+                    startY = 740
+                }
+            }
+
+            const { width } = pagina.getSize()
+
+            pagina.drawText(`Assinado em ${hoje}`, {
+                x: 60, y: startY, size: 10, font,
+                color: rgb(0.4, 0.4, 0.4)
+            })
+
+            pagina.drawLine({
+                start: { x: 60, y: startY - 15 },
+                end: { x: 280, y: startY - 15 },
+                thickness: 0.8,
+                color: rgb(0.3, 0.3, 0.3)
+            })
+
+            pagina.drawText(nomeCompleto, {
+                x: 60, y: startY - 28, size: 11, font: fontBold,
+                color: rgb(0.1, 0.1, 0.1)
+            })
+
+            pagina.drawText(`CPF: ${cpfFormatado}`, {
+                x: 60, y: startY - 41, size: 10, font,
+                color: rgb(0.3, 0.3, 0.3)
+            })
+
+            pagina.drawText('Assinado digitalmente', {
+                x: 60, y: startY - 54, size: 9, font,
+                color: rgb(0.5, 0.5, 0.5)
+            })
+
+            const nomeAssinado = `assinado_${doc.arquivoOriginal}`
+            const filePathAssinado = path.join(pastaDocumentos, nomeAssinado)
+            const pdfBytesAssinado = await pdfDoc.save()
+            fs.writeFileSync(filePathAssinado, pdfBytesAssinado)
+
+            await doc.update({
+                arquivoAssinado: nomeAssinado,
+                assinado: true,
+                totalAssinaturas: count + 1
+            })
+
+            req.flash('success_msg', 'Documento assinado com sucesso')
+            return res.redirect('/documentos')
+
+        } catch (err) {
+            console.log(err)
+            req.flash('error_msg', 'Erro ao assinar documento')
+            return res.redirect('/documentos')
         }
     }
 }
