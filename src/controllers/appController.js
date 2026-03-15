@@ -21,9 +21,6 @@ async function getLocals(req) {
 
 module.exports = class appController {
 
-    // ─── GET ─────────────────────────────────────────────────────────────────
-
-    // GET DE HOME
     static async home(req, res) {
         const locals = await getLocals(req)
         if (!locals) {
@@ -53,7 +50,6 @@ module.exports = class appController {
         })
     }
 
-    // GET DE NOVO CONTRATO
     static async novoContratoGet(req, res) {
         const locals = await getLocals(req)
         if (!locals) return res.redirect('/')
@@ -67,7 +63,6 @@ module.exports = class appController {
         })
     }
 
-    // GET DE LISTAR CONTRATOS
     static async listarContratos(req, res) {
         const locals = await getLocals(req)
         if (!locals) return res.redirect('/')
@@ -109,7 +104,6 @@ module.exports = class appController {
         }
     }
 
-    // GET DE DOWNLOAD CONTRATO
     static async downloadContrato(req, res) {
         try {
             const contrato = await Contrato.findOne({
@@ -136,9 +130,6 @@ module.exports = class appController {
         }
     }
 
-    // ─── POST ────────────────────────────────────────────────────────────────
-
-    // POST DE NOVO CONTRATO
     static async novoContrato(req, res) {
         const { tipo, tituloCustom, clausulaTitulo, clausulaTexto } = req.body
 

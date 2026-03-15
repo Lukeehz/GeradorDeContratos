@@ -26,8 +26,7 @@ body {
     color: var(--text);
     display: flex;
     min-height: 100vh;
-    background-image:
-        radial-gradient(ellipse 60% 40% at 20% 0%, rgba(108,99,255,0.08), transparent);
+    background-image: radial-gradient(ellipse 60% 40% at 20% 0%, rgba(108,99,255,0.08), transparent);
 }
 
 /* ── Sidebar ── */
@@ -55,6 +54,7 @@ body {
     align-items: center;
     gap: 10px;
     padding: 0 8px;
+    text-decoration: none;
 }
 
 .brand-logo {
@@ -100,16 +100,8 @@ body {
     transition: background var(--t), color var(--t);
 }
 
-.nav-item:hover {
-    background: var(--surface-2);
-    color: var(--text);
-}
-
-.nav-item--active {
-    background: var(--accent-dim);
-    color: var(--accent-h);
-}
-
+.nav-item:hover { background: var(--surface-2); color: var(--text); }
+.nav-item--active { background: var(--accent-dim); color: var(--accent-h); }
 .nav-item--active svg { stroke: var(--accent-h); }
 
 .sidebar__footer {
@@ -140,11 +132,7 @@ body {
 
 .user-info { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
 
-.user-details {
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
-}
+.user-details { display: flex; flex-direction: column; min-width: 0; }
 
 .user-name {
     font-size: 13px;
@@ -155,10 +143,7 @@ body {
     text-overflow: ellipsis;
 }
 
-.user-role {
-    font-size: 11px;
-    color: var(--muted);
-}
+.user-role { font-size: 11px; color: var(--muted); }
 
 .btn-logout {
     color: var(--muted);
@@ -203,11 +188,7 @@ body {
     color: var(--text);
 }
 
-.page-sub {
-    font-size: 14px;
-    color: var(--muted);
-    margin-top: 4px;
-}
+.page-sub { font-size: 14px; color: var(--muted); margin-top: 4px; }
 
 .content {
     padding: 32px 40px 40px;
@@ -217,7 +198,6 @@ body {
 /* ── Dashboard ── */
 .dashboard { display: flex; flex-direction: column; gap: 32px; }
 
-/* CTA Banner */
 .cta-banner {
     background: var(--surface);
     border: 1px solid var(--border);
@@ -248,11 +228,7 @@ body {
     color: var(--text);
 }
 
-.cta-banner__text p {
-    font-size: 14px;
-    color: var(--muted);
-    margin-top: 6px;
-}
+.cta-banner__text p { font-size: 14px; color: var(--muted); margin-top: 6px; }
 
 .btn-cta {
     display: flex;
@@ -279,7 +255,6 @@ body {
 
 .btn-cta:active { transform: translateY(0); }
 
-/* Recent */
 .section-header {
     display: flex;
     align-items: center;
@@ -294,16 +269,9 @@ body {
     color: var(--text);
 }
 
-.section-link {
-    font-size: 13px;
-    color: var(--accent);
-    text-decoration: none;
-    transition: color var(--t);
-}
-
+.section-link { font-size: 13px; color: var(--accent); text-decoration: none; transition: color var(--t); }
 .section-link:hover { color: var(--accent-h); }
 
-/* Empty state */
 .empty-state {
     background: var(--surface);
     border: 1px dashed var(--border);
@@ -328,10 +296,7 @@ body {
     margin-bottom: 4px;
 }
 
-.empty-state p {
-    font-size: 14px;
-    color: var(--muted);
-}
+.empty-state p { font-size: 14px; color: var(--muted); }
 
 .btn-ghost {
     font-size: 13px;
@@ -345,10 +310,7 @@ body {
     transition: background var(--t), color var(--t);
 }
 
-.btn-ghost:hover {
-    background: var(--accent-dim);
-    color: var(--accent-h);
-}
+.btn-ghost:hover { background: var(--accent-dim); color: var(--accent-h); }
 
 /* ── Flash ── */
 .flash {
@@ -368,18 +330,9 @@ body {
     font-size: 10px; font-weight: 700; flex-shrink: 0;
 }
 
-.flash--error {
-    background: rgba(239,68,68,0.1);
-    border: 1px solid rgba(239,68,68,0.25);
-    color: #fca5a5;
-}
+.flash--error { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.25); color: #fca5a5; }
 .flash--error .flash__icon { background: rgba(239,68,68,0.2); color: var(--error); }
-
-.flash--success {
-    background: rgba(34,197,94,0.1);
-    border: 1px solid rgba(34,197,94,0.25);
-    color: #86efac;
-}
+.flash--success { background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.25); color: #86efac; }
 .flash--success .flash__icon { background: rgba(34,197,94,0.2); color: var(--success); }
 
 /* ── Form Page ── */
@@ -421,8 +374,9 @@ body {
     text-transform: uppercase;
 }
 
+/* ── Inputs — todos os tipos ── */
+.form-group input,
 .form-group select,
-.form-group input[type="text"],
 .form-group textarea {
     background: var(--bg);
     border: 1px solid var(--border);
@@ -434,10 +388,11 @@ body {
     outline: none;
     transition: border-color var(--t), box-shadow var(--t);
     width: 100%;
+    appearance: auto;
 }
 
 .form-group select { cursor: pointer; }
-.form-group select option { background: var(--surface); }
+.form-group select option { background: var(--surface); color: var(--text); }
 
 .form-group textarea {
     resize: vertical;
@@ -445,15 +400,23 @@ body {
     line-height: 1.6;
 }
 
-.form-group select::placeholder,
 .form-group input::placeholder,
 .form-group textarea::placeholder { color: var(--muted-2); }
 
-.form-group select:focus,
 .form-group input:focus,
+.form-group select:focus,
 .form-group textarea:focus {
     border-color: var(--accent);
     box-shadow: 0 0 0 3px rgba(108,99,255,0.15);
+}
+
+/* Fix autocomplete browser */
+.form-group input:-webkit-autofill,
+.form-group input:-webkit-autofill:hover,
+.form-group input:-webkit-autofill:focus {
+    -webkit-box-shadow: 0 0 0px 1000px var(--bg) inset !important;
+    -webkit-text-fill-color: var(--text) !important;
+    caret-color: var(--text);
 }
 
 .form-hint { font-size: 12px; color: var(--muted); }
@@ -466,6 +429,36 @@ body {
     margin-top: 4px;
 }
 
+/* ── Botão primário ── */
+.btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 13px 22px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background var(--t), transform var(--t), box-shadow var(--t);
+    white-space: nowrap;
+}
+
+.btn-primary svg { width: 16px; height: 16px; flex-shrink: 0; stroke: #fff; }
+
+.btn-primary:hover {
+    background: var(--accent-h);
+    transform: translateY(-1px);
+    box-shadow: 0 8px 24px rgba(108,99,255,0.35);
+}
+
+.btn-primary:active { transform: translateY(0); }
+
 .btn-back {
     font-size: 14px;
     font-weight: 500;
@@ -475,14 +468,14 @@ body {
     border-radius: 10px;
     border: 1px solid var(--border);
     transition: color var(--t), background var(--t);
+    background: transparent;
+    cursor: pointer;
 }
 
 .btn-back:hover { color: var(--text); background: var(--surface-2); }
 
 /* ── Cláusulas ── */
-.clausulas-header {
-    margin-bottom: 12px;
-}
+.clausulas-header { margin-bottom: 12px; }
 
 .clausulas-label {
     font-size: 12px;
@@ -504,11 +497,7 @@ body {
     animation: fadeUp 0.2s ease both;
 }
 
-.clausula-header {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
+.clausula-header { display: flex; align-items: center; gap: 10px; }
 
 .clausula-titulo {
     flex: 1;
@@ -523,12 +512,10 @@ body {
     color: var(--text);
     outline: none;
     transition: border-color var(--t);
+    width: auto;
 }
 
-.clausula-titulo:focus {
-    border-color: var(--accent);
-    box-shadow: none;
-}
+.clausula-titulo:focus { border-color: var(--accent); box-shadow: none; }
 
 .clausula-texto {
     background: transparent;
@@ -559,10 +546,7 @@ body {
     flex-shrink: 0;
 }
 
-.btn-remove:hover {
-    color: var(--error);
-    background: rgba(239,68,68,0.1);
-}
+.btn-remove:hover { color: var(--error); background: rgba(239,68,68,0.1); }
 
 .btn-add-clausula {
     display: flex;
@@ -583,11 +567,7 @@ body {
     margin-top: 4px;
 }
 
-.btn-add-clausula:hover {
-    border-color: var(--accent);
-    color: var(--accent);
-    background: var(--accent-dim);
-}
+.btn-add-clausula:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
 
 /* ── Lista de Contratos ── */
 .lista-page { display: flex; flex-direction: column; gap: 24px; }
@@ -600,24 +580,11 @@ body {
     flex-wrap: wrap;
 }
 
-.filtro-form {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    flex-wrap: wrap;
-}
+.filtro-form { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 
-.filtro-group {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
+.filtro-group { display: flex; align-items: center; gap: 8px; }
 
-.filtro-group label {
-    font-size: 13px;
-    color: var(--muted);
-    white-space: nowrap;
-}
+.filtro-group label { font-size: 13px; color: var(--muted); white-space: nowrap; }
 
 .filtro-group input[type="date"] {
     background: var(--surface);
@@ -630,11 +597,10 @@ body {
     outline: none;
     transition: border-color var(--t);
     color-scheme: dark;
+    width: auto;
 }
 
-.filtro-group input[type="date"]:focus {
-    border-color: var(--accent);
-}
+.filtro-group input[type="date"]:focus { border-color: var(--accent); }
 
 .btn-filtrar {
     background: var(--accent);
@@ -651,20 +617,10 @@ body {
 
 .btn-filtrar:hover { background: var(--accent-h); }
 
-.btn-limpar {
-    font-size: 13px;
-    color: var(--muted);
-    text-decoration: none;
-    transition: color var(--t);
-}
-
+.btn-limpar { font-size: 13px; color: var(--muted); text-decoration: none; transition: color var(--t); }
 .btn-limpar:hover { color: var(--text); }
 
-.contratos-lista {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
+.contratos-lista { display: flex; flex-direction: column; gap: 10px; }
 
 .contrato-item {
     background: var(--surface);
@@ -680,11 +636,7 @@ body {
 
 .contrato-item:hover { border-color: var(--accent); }
 
-.contrato-info {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-}
+.contrato-info { display: flex; align-items: center; gap: 14px; }
 
 .contrato-icon {
     width: 40px;
@@ -698,18 +650,8 @@ body {
     flex-shrink: 0;
 }
 
-.contrato-tipo {
-    font-family: 'Syne', sans-serif;
-    font-weight: 600;
-    font-size: 14px;
-    color: var(--text);
-}
-
-.contrato-data {
-    font-size: 12px;
-    color: var(--muted);
-    margin-top: 2px;
-}
+.contrato-tipo { font-family: 'Syne', sans-serif; font-weight: 600; font-size: 14px; color: var(--text); }
+.contrato-data { font-size: 12px; color: var(--muted); margin-top: 2px; }
 
 .btn-download {
     display: flex;
@@ -727,15 +669,7 @@ body {
     flex-shrink: 0;
 }
 
-.btn-download:hover {
-    background: var(--accent-dim);
-    color: var(--accent-h);
-}
-
-/* ── Brand como link ── */
-.sidebar__brand {
-    text-decoration: none;
-}
+.btn-download:hover { background: var(--accent-dim); color: var(--accent-h); }
 
 /* ── Usuários ── */
 .badge-role {

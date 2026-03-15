@@ -1,6 +1,7 @@
 const { User } = require('../models/index')
+
 module.exports = async (req, res, next) => {
-    if (req.session.userId) {
+    if (req.session.userId && req.accepts('html')) {
         try {
             const user = await User.findByPk(req.session.userId)
             if (user) {

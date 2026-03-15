@@ -3,7 +3,7 @@ const express = require('express')
 const exphbs = require('express-handlebars')
 const sessions = require('express-session')
 const flash = require('express-flash')
-const fileStore = require('session-file-store')(sessions)
+const SQLiteStore = require('connect-sqlite3')(sessions)
 const path = require('path')
 const app = express()
 const userLocals = require('./src/middlewares/userLocals')
@@ -33,11 +33,12 @@ app.use(sessions({
     cookie: {
         maxAge: 1000 * 60 * 60 * 24 * 7
     },
-    store: new fileStore({
-        logFn: function () {},
-        path: path.join(__dirname, 'sessions'),
-        ttl: 604800
-    })
+
+    store: new SQLiteStore({
+    db: 'sessions.db',
+    dir: path.join(__dirname, 'sessions')
+})
+
 }))
 app.use(flash())
 app.use(userLocals)
