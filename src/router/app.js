@@ -15,5 +15,7 @@ router.get('/documentos/importar', checkAuth, appController.importarGet)
 router.post('/documentos/importar', checkAuth, upload.single('arquivo'), appController.importarPost)
 router.post('/documentos/:id/assinar', checkAuth, appController.assinar)
 router.get('/documentos/:id/download', checkAuth, appController.downloadDocumento)
+router.get('/documentos/:id/compartilhar', checkAuth, appController.compartilharGet)
+router.post('/documentos/:id/compartilhar', checkAuth, appController.compartilharPost)
 
 module.exports = router

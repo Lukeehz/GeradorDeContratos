@@ -1,0 +1,55 @@
+<div class="form-page">
+    <div class="form-card">
+        <div class="form-header">
+            <h2 class="form-title">Compartilhar Documento</h2>
+            <p class="form-subtitle">Selecione um usuário para enviar o documento para assinar.</p>
+        </div>
+
+        {{#if usuarios.length}}
+            <div class="contratos-lista">
+                {{#each usuarios}}
+                <div class="contrato-item">
+                    <div class="contrato-info">
+                        <div class="user-avatar" style="flex-shrink:0">
+                            {{nomeCompleto.[0]}}
+                        </div>
+                        <div>
+                            <p class="contrato-tipo">{{nomeCompleto}}</p>
+                            <p class="contrato-data">{{email}}</p>
+                        </div>
+                    </div>
+                    {{#if jaCompartilhado}}
+                        <span class="badge-assinado">Já compartilhado</span>
+                    {{else}}
+                        <form action="/documentos/{{../documentoId}}/compartilhar" method="POST">
+                            <input type="hidden" name="usuarioId" value="{{id}}">
+                            <button type="submit" class="btn-assinar">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                    <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
+                                    <polyline points="16,6 12,2 8,6"/>
+                                    <line x1="12" y1="2" x2="12" y2="15"/>
+                                </svg>
+                                Compartilhar
+                            </button>
+                        </form>
+                    {{/if}}
+                </div>
+                {{/each}}
+            </div>
+        {{else}}
+            <div class="empty-state">
+                <div class="empty-icon">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                        <circle cx="12" cy="7" r="4"/>
+                    </svg>
+                </div>
+                <p>Nenhum outro usuário cadastrado.</p>
+            </div>
+        {{/if}}
+
+        <div class="form-actions">
+            <a href="/documentos" class="btn-back">Voltar</a>
+        </div>
+    </div>
+</div>

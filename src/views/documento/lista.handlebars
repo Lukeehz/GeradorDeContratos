@@ -32,11 +32,23 @@
                             {{else}}
                                 <span class="badge-pendente">Pendente</span>
                             {{/if}}
+                            {{#unless isDono}}
+                                <span class="badge-role" style="margin-left:4px">Compartilhado</span>
+                            {{/unless}}
                         </p>
                     </div>
                 </div>
-                <div style="display:flex;gap:8px;align-items:center">
-                    {{#unless assinado}}
+                <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+                    {{#if isDono}}
+                    <a href="/documentos/{{id}}/compartilhar" class="btn-back" style="padding:8px 14px;font-size:13px">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
+                            <polyline points="16,6 12,2 8,6"/>
+                            <line x1="12" y1="2" x2="12" y2="15"/>
+                        </svg>
+                        Compartilhar
+                    </a>
+                    {{/if}}
                     <form action="/documentos/{{id}}/assinar" method="POST">
                         <button type="submit" class="btn-assinar">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
@@ -46,7 +58,6 @@
                             Assinar
                         </button>
                     </form>
-                    {{/unless}}
                     <a href="/documentos/{{id}}/download" class="btn-download">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>

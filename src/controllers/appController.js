@@ -1,4 +1,4 @@
-const { Contrato, Documento, User } = require('../models/index')
+const { Contrato, Documento, DocumentoAssinante, User } = require('../models/index')
 const { cpf } = require('cpf-cnpj-validator')
 const PDFDocument = require('pdfkit')
 const { PDFDocument: PDFLib, rgb, StandardFonts } = require('pdf-lib')
@@ -146,17 +146,34 @@ module.exports = class appController {
         if (!locals) return res.redirect('/')
 
         try {
-            const documentos = await Documento.findAll({
-                where: { userID: req.session.userId },
+            const userId = req.session.userId
+
+            // Documentos próprios
+            const proprios = await Documento.findAll({
+                where: { userID: userId },
                 order: [['createdAt', 'DESC']]
             })
 
-            const lista = documentos.map(d => ({
+            // Documentos onde é assinante
+            const assinaturas = await DocumentoAssinante.findAll({
+                where: { userID: userId },
+                include: [{ model: Documento }]
+            })
+
+            const idsJaListados = proprios.map(d => d.id)
+            const compartilhados = assinaturas
+                .map(a => a.Documento)
+                .filter(d => d && !idsJaListados.includes(d.id))
+
+            const todos = [...proprios, ...compartilhados]
+
+            const lista = todos.map(d => ({
                 id: d.id,
                 nomeOriginal: d.nomeOriginal,
                 assinado: d.assinado,
                 arquivo: d.assinado ? d.arquivoAssinado : d.arquivoOriginal,
-                data: d.createdAt.toLocaleDateString('pt-BR')
+                data: d.createdAt.toLocaleDateString('pt-BR'),
+                isDono: d.userID === userId
             }))
 
             res.render('documento/lista', {
@@ -194,11 +211,22 @@ module.exports = class appController {
     static async downloadDocumento(req, res) {
         try {
             const doc = await Documento.findOne({
-                where: { id: req.params.id, userID: req.session.userId }
+                where: { id: req.params.id }
             })
 
             if (!doc) {
                 req.flash('error_msg', 'Documento não encontrado')
+                return res.redirect('/documentos')
+            }
+
+            // Verifica se é o dono ou um assinante
+            const isDono = doc.userID === req.session.userId
+            const isAssinante = await DocumentoAssinante.findOne({
+                where: { documentoID: doc.id, userID: req.session.userId }
+            })
+
+            if (!isDono && !isAssinante) {
+                req.flash('error_msg', 'Acesso negado')
                 return res.redirect('/documentos')
             }
 
@@ -325,7 +353,96 @@ module.exports = class appController {
         }
     }
 
-    // POST DE IMPORTAR DOCUMENTO
+    // GET DE COMPARTILHAR DOCUMENTO
+    static async compartilharGet(req, res) {
+        const locals = await getLocals(req)
+        if (!locals) return res.redirect('/')
+
+        try {
+            const doc = await Documento.findOne({
+                where: { id: req.params.id, userID: req.session.userId }
+            })
+
+            if (!doc) {
+                req.flash('error_msg', 'Documento não encontrado')
+                return res.redirect('/documentos')
+            }
+
+            // Todos os usuários exceto o dono
+            const todosUsuarios = await User.findAll({
+                where: { id: { [require('sequelize').Op.ne]: req.session.userId } },
+                attributes: ['id', 'name', 'midName', 'surName', 'email']
+            })
+
+            // Quem já tem compartilhamento
+            const jaCompartilhados = await DocumentoCompartilhado.findAll({
+                where: { documentoID: doc.id }
+            })
+            const idsCompartilhados = jaCompartilhados.map(c => c.userID)
+
+            const usuarios = todosUsuarios.map(u => ({
+                id: u.id,
+                nomeCompleto: `${u.name} ${u.midName} ${u.surName}`,
+                email: u.email,
+                jaCompartilhado: idsCompartilhados.includes(u.id)
+            }))
+
+            res.render('documento/compartilhar', {
+                layout: 'main',
+                title: 'Compartilhar Documento',
+                documentoId: doc.id,
+                nomeDocumento: doc.nomeOriginal,
+                usuarios,
+                ...locals,
+                messages: req.flash()
+            })
+        } catch (err) {
+            console.log(err)
+            req.flash('error_msg', 'Erro ao carregar usuários')
+            return res.redirect('/documentos')
+        }
+    }
+
+    // POST DE COMPARTILHAR DOCUMENTO
+    static async compartilharPost(req, res) {
+        try {
+            const doc = await Documento.findOne({
+                where: { id: req.params.id, userID: req.session.userId }
+            })
+
+            if (!doc) {
+                req.flash('error_msg', 'Documento não encontrado')
+                return res.redirect('/documentos')
+            }
+
+            const userIDs = req.body.userIDs
+            if (!userIDs) {
+                req.flash('error_msg', 'Selecione ao menos um usuário')
+                return res.redirect(`/documentos/${doc.id}/compartilhar`)
+            }
+
+            const ids = Array.isArray(userIDs) ? userIDs : [userIDs]
+
+            for (const uid of ids) {
+                const jaExiste = await DocumentoCompartilhado.findOne({
+                    where: { documentoID: doc.id, userID: uid }
+                })
+                if (!jaExiste) {
+                    await DocumentoCompartilhado.create({
+                        documentoID: doc.id,
+                        userID: uid
+                    })
+                }
+            }
+
+            req.flash('success_msg', 'Documento compartilhado com sucesso')
+            return res.redirect('/documentos')
+        } catch (err) {
+            console.log(err)
+            req.flash('error_msg', 'Erro ao compartilhar documento')
+            return res.redirect('/documentos')
+        }
+    }
     static async importarPost(req, res) {
         if (!req.file) {
             req.flash('error_msg', 'Selecione um arquivo PDF')
@@ -356,11 +473,22 @@ module.exports = class appController {
             if (!user) return res.redirect('/login')
 
             const doc = await Documento.findOne({
-                where: { id: req.params.id, userID: req.session.userId }
+                where: { id: req.params.id }
             })
 
             if (!doc) {
                 req.flash('error_msg', 'Documento não encontrado')
+                return res.redirect('/documentos')
+            }
+
+            // Verifica se é dono ou foi compartilhado
+            const isDono = doc.userID === req.session.userId
+            const isCompartilhado = await DocumentoAssinante.findOne({
+                where: { documentoID: doc.id, userID: req.session.userId }
+            })
+
+            if (!isDono && !isCompartilhado) {
+                req.flash('error_msg', 'Sem permissão para assinar este documento')
                 return res.redirect('/documentos')
             }
 
@@ -377,42 +505,56 @@ module.exports = class appController {
             const hoje = new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })
 
             const count = parseInt(doc.totalAssinaturas) || 0
-            const alturaBloco = 80
+            const alturaBloco = 90
+            const topoConteudo = 740
+            const margemMin = 60
+            const porPagina = Math.floor((topoConteudo - margemMin) / alturaBloco)
+            const indexNaPagina = count % porPagina
+            const startY = topoConteudo - (indexNaPagina * alturaBloco)
 
             let pagina
-            let startY
 
             if (count === 0) {
-                // Primeira assinatura — sempre cria nova página
                 pagina = pdfDoc.addPage([595, 842])
                 const { width } = pagina.getSize()
-
                 pagina.drawText('Assinaturas Digitais', {
-                    x: 60, y: 780, size: 13, font: fontBold,
-                    color: rgb(0.2, 0.2, 0.2)
+                    x: 60, y: 800, size: 14, font: fontBold,
+                    color: rgb(0.15, 0.15, 0.15)
                 })
                 pagina.drawLine({
-                    start: { x: 60, y: 768 },
-                    end: { x: width - 60, y: 768 },
+                    start: { x: 60, y: 788 },
+                    end: { x: width - 60, y: 788 },
                     thickness: 0.5,
-                    color: rgb(0.7, 0.7, 0.7)
+                    color: rgb(0.75, 0.75, 0.75)
                 })
-
-                startY = 740
+            } else if (indexNaPagina === 0) {
+                pagina = pdfDoc.addPage([595, 842])
+                const { width } = pagina.getSize()
+                pagina.drawText('Assinaturas Digitais (continuação)', {
+                    x: 60, y: 800, size: 14, font: fontBold,
+                    color: rgb(0.15, 0.15, 0.15)
+                })
+                pagina.drawLine({
+                    start: { x: 60, y: 788 },
+                    end: { x: width - 60, y: 788 },
+                    thickness: 0.5,
+                    color: rgb(0.75, 0.75, 0.75)
+                })
             } else {
-                // Assinaturas seguintes — usa a última página (já é a de assinaturas)
                 const pages = pdfDoc.getPages()
                 pagina = pages[pages.length - 1]
-                startY = 740 - (count * alturaBloco)
-
-                // Se não couber mais, cria nova página
-                if (startY < 60) {
-                    pagina = pdfDoc.addPage([595, 842])
-                    startY = 740
-                }
             }
 
             const { width } = pagina.getSize()
+
+            if (indexNaPagina > 0) {
+                pagina.drawLine({
+                    start: { x: 60, y: startY + 15 },
+                    end: { x: width - 60, y: startY + 15 },
+                    thickness: 0.3,
+                    color: rgb(0.85, 0.85, 0.85)
+                })
+            }
 
             pagina.drawText(`Assinado em ${hoje}`, {
                 x: 60, y: startY, size: 10, font,
@@ -420,25 +562,25 @@ module.exports = class appController {
             })
 
             pagina.drawLine({
-                start: { x: 60, y: startY - 15 },
-                end: { x: 280, y: startY - 15 },
+                start: { x: 60, y: startY - 16 },
+                end: { x: 280, y: startY - 16 },
                 thickness: 0.8,
                 color: rgb(0.3, 0.3, 0.3)
             })
 
             pagina.drawText(nomeCompleto, {
-                x: 60, y: startY - 28, size: 11, font: fontBold,
+                x: 60, y: startY - 30, size: 11, font: fontBold,
                 color: rgb(0.1, 0.1, 0.1)
             })
 
             pagina.drawText(`CPF: ${cpfFormatado}`, {
-                x: 60, y: startY - 41, size: 10, font,
+                x: 60, y: startY - 44, size: 10, font,
                 color: rgb(0.3, 0.3, 0.3)
             })
 
             pagina.drawText('Assinado digitalmente', {
-                x: 60, y: startY - 54, size: 9, font,
-                color: rgb(0.5, 0.5, 0.5)
+                x: 60, y: startY - 57, size: 9, font,
+                color: rgb(0.55, 0.55, 0.55)
             })
 
             const nomeAssinado = `assinado_${doc.arquivoOriginal}`
@@ -446,11 +588,23 @@ module.exports = class appController {
             const pdfBytesAssinado = await pdfDoc.save()
             fs.writeFileSync(filePathAssinado, pdfBytesAssinado)
 
+            // Atualiza o documento principal
             await doc.update({
                 arquivoAssinado: nomeAssinado,
                 assinado: true,
                 totalAssinaturas: count + 1
             })
+
+            // Registra o assinante apenas se ainda não estiver registrado
+            const jaRegistrado = await DocumentoAssinante.findOne({
+                where: { documentoID: doc.id, userID: req.session.userId }
+            })
+            if (!jaRegistrado) {
+                await DocumentoAssinante.create({
+                    documentoID: doc.id,
+                    userID: req.session.userId
+                })
+            }
 
             req.flash('success_msg', 'Documento assinado com sucesso')
             return res.redirect('/documentos')
@@ -458,6 +612,96 @@ module.exports = class appController {
         } catch (err) {
             console.log(err)
             req.flash('error_msg', 'Erro ao assinar documento')
+            return res.redirect('/documentos')
+        }
+    }
+
+    // ─── GET DE COMPARTILHAR DOCUMENTO ───────────────────────────────────────
+    static async compartilharGet(req, res) {
+        const locals = await getLocals(req)
+        if (!locals) return res.redirect('/login')
+
+        try {
+            const doc = await Documento.findOne({
+                where: { id: req.params.id, userID: req.session.userId }
+            })
+
+            if (!doc) {
+                req.flash('error_msg', 'Documento não encontrado')
+                return res.redirect('/documentos')
+            }
+
+            // Lista todos os usuários exceto o dono
+            const usuarios = await User.findAll({
+                where: { id: { [Op.ne]: req.session.userId } },
+                attributes: ['id', 'name', 'midName', 'surName', 'email']
+            })
+
+            // Já compartilhados
+            const jaCompartilhados = await DocumentoAssinante.findAll({
+                where: { documentoID: doc.id }
+            })
+            const idsJaCompartilhados = jaCompartilhados.map(c => c.userID)
+
+            const lista = usuarios.map(u => ({
+                id: u.id,
+                nomeCompleto: `${u.name} ${u.midName} ${u.surName}`,
+                email: u.email,
+                jaCompartilhado: idsJaCompartilhados.includes(u.id)
+            }))
+
+            res.render('documento/compartilhar', {
+                layout: 'main',
+                title: 'Compartilhar Documento',
+                pageSubtitle: doc.nomeOriginal,
+                isDocumentos: true,
+                documentoId: doc.id,
+                usuarios: lista,
+                ...locals,
+                messages: req.flash()
+            })
+        } catch (err) {
+            console.log(err)
+            req.flash('error_msg', 'Erro ao carregar usuários')
+            return res.redirect('/documentos')
+        }
+    }
+
+    // ─── POST DE COMPARTILHAR DOCUMENTO ──────────────────────────────────────
+    static async compartilharPost(req, res) {
+        const { usuarioId } = req.body
+
+        try {
+            const doc = await Documento.findOne({
+                where: { id: req.params.id, userID: req.session.userId }
+            })
+
+            if (!doc) {
+                req.flash('error_msg', 'Documento não encontrado')
+                return res.redirect('/documentos')
+            }
+
+            // Verifica se já foi compartilhado
+            const jaExiste = await DocumentoAssinante.findOne({
+                where: { documentoID: doc.id, userID: usuarioId }
+            })
+
+            if (jaExiste) {
+                req.flash('error_msg', 'Documento já compartilhado com este usuário')
+                return res.redirect(`/documentos/${doc.id}/compartilhar`)
+            }
+
+            await DocumentoAssinante.create({
+                documentoID: doc.id,
+                userID: usuarioId
+            })
+
+            req.flash('success_msg', 'Documento compartilhado com sucesso')
+            return res.redirect('/documentos')
+
+        } catch (err) {
+            console.log(err)
+            req.flash('error_msg', 'Erro ao compartilhar documento')
             return res.redirect('/documentos')
         }
     }

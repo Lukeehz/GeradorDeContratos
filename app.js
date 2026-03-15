@@ -50,7 +50,7 @@ app.get('/', (req, res) => {
 })
 
 conn
-    .sync({ force: true })
+    .sync({ force: true, alter: false })
     .then(() => {
         app.listen(process.env.port)
         console.log(`Servidor rodando na porta ${process.env.port}`)

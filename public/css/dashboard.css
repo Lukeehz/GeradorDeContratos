@@ -773,3 +773,70 @@ body {
 }
 
 .btn-assinar:hover { background: rgba(34,197,94,0.1); }
+
+/* ── Compartilhar ── */
+.btn-compartilhar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--muted);
+    text-decoration: none;
+    border: 1px solid var(--border);
+    padding: 8px 14px;
+    border-radius: 8px;
+    transition: background var(--t), color var(--t);
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.btn-compartilhar:hover {
+    background: var(--surface-2);
+    color: var(--text);
+}
+
+/* ── Check list usuarios ── */
+.usuarios-check-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.check-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: border-color var(--t);
+}
+
+.check-item:hover { border-color: var(--accent); }
+
+.check-item input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--accent);
+    flex-shrink: 0;
+}
+
+.check-info {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.check-nome {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text);
+}
+
+.check-email {
+    font-size: 12px;
+    color: var(--muted);
+}
