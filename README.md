@@ -121,12 +121,6 @@ http://localhost:3000
 
 ---
 
-## Status do Projeto
-
-Versão atual: **1.0**
-
----
-
 ## Licença
 
 Este projeto está licenciado sob a licença **MIT**.
